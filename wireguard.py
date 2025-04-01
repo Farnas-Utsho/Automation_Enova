@@ -2,15 +2,15 @@ import re
 import time
 
 from appium import webdriver
-# Connect local device with desired capabilities using UiAutomator2Options
 from appium.options.android import UiAutomator2Options
 from appium.webdriver.common.appiumby import AppiumBy
+from selenium.common import TimeoutException, NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 
-
+# Connect local device with desired capabilities using UiAutomator2Options
 options = UiAutomator2Options()
 options.platform_name = "Android"
 options.platform_version = "14"  # Set your actual Android version
@@ -124,60 +124,72 @@ def connect_disconnect_server(server_name):
     except Exception as e:
         print(f"{server_name} server is not selected or connected", e)
 
-
     try:
-
         """
-          Opens the IP Info app, refreshes to get the public IP address, then switches back to Enova VPN to change server.
-         """
+        Opens the IP Info app, refreshes to get the public IP address, then switches back to Enova VPN to change server.
+        """
         app_package = "cz.webprovider.whatismyipaddress"
         app_activity = "cz.webprovider.whatismyipaddress.MainActivity"
         refresh_button_id = "cz.webprovider.whatismyipaddress:id/refresh_info"
         ip_display_id = "cz.webprovider.whatismyipaddress:id/zobraz_ip"
 
-        # # Force close the IP Info app (if it's already running)
-        # #print("Closing IP Info app before reopening...")
+        # Force close the IP Info app
+        print("Closing IP Info app before reopening...")
         driver.execute_script("mobile: shell", {"command": f"am force-stop {app_package}"})
         time.sleep(3)  # Wait for the app to fully close
 
-        #  Launch the IP Info app
-        # print(f"Opening IP Info app to check IP for {server_name}...")
+        # Launch the IP Info app
+        print(f"Opening IP Info app to check IP for {server_name}...")
         driver.execute_script("mobile: shell", {"command": f"am start -n {app_package}/{app_activity}"})
         time.sleep(5)  # Give time for the app to open
 
-        # Click the Refresh Button to refresh the IP address
-        #print("Clicking refresh button to update IP...")
-
-        refresh_button = driver.find_element(AppiumBy.ID, refresh_button_id)
-        refresh_button.click()
-
-
+        # Wait for the refresh button to appear and click it
+        try:
+            refresh_button = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.ID, refresh_button_id))
+            )
+            print("Clicking refresh button to update IP...")
+            refresh_button.click()
+        except TimeoutException:
+            print(f"❌ {server_name} - Refresh button not found. Skipping IP fetch.")
+            return
+        except NoSuchElementException as e:
+            print(f"❌ {server_name} - Refresh button element not found. Error: {str(e)}")
+            return
 
         # Wait for the IP to refresh (give extra time to ensure the IP is updated)
         time.sleep(5)  # Waiting a few seconds after the refresh button click
 
-        #  Wait for the new IP to appear
-        wait = WebDriverWait(driver, 30)  # Wait up to 30 seconds for the IP to appear
-        ip_element = wait.until(EC.presence_of_element_located(
-            (AppiumBy.ID, ip_display_id)
-        ))
+        # Wait for the new IP to appear
+        try:
+            ip_element = WebDriverWait(driver, 30).until(
+                EC.presence_of_element_located((By.ID, ip_display_id))
+            )
+            print("IP from the Application:")
+            ip_address = ip_element.text.strip()
+            print(f"Displayed IP Address for {server_name}: {ip_address}")
 
-        # Fetch the updated IP Address from the element
-        print("Ip From the Application")
-        ip_address = ip_element.text.strip()
-        print(f"Displayed IP Address for {server_name}: {ip_address}")
+            if not ip_address:
+                print(f"⚠️ Warning: No IP Address found for {server_name}. Checking page source...")
+                print(driver.page_source)  # Debugging step
+        except TimeoutException:
+            print(f"❌ {server_name} - IP element not found. Skipping IP fetch.")
+            return
+        except NoSuchElementException as e:
+            print(f"❌ {server_name} - IP element not found. Error: {str(e)}")
+            return
 
-        if not ip_address:
-            print(f"⚠️ Warning: No IP Address found for {server_name}. Checking page source...")
-            print(driver.page_source)  # Debugging step
+        # Close the IP Info app and return to the home screen
+        try:
+            driver.execute_script("mobile: shell", {"command": "input keyevent KEYCODE_HOME"})
+            print(f"App closed after fetching IP for {server_name}.")
+        except Exception as e:
+            print(f"❌ {server_name} - Failed to return to home screen. Error: {str(e)}")
 
+    except Exception as e:
+        print(f"❌ {server_name} - Failed to fetch IP from the Application.")
+        print(f"Error details: {str(e)}")
 
-
-        #  Close the IP Info app and return to the home screen
-        driver.execute_script("mobile: shell", {"command": "input keyevent KEYCODE_HOME"})
-        #print(f"App closed after fetching IP for {server_name}.")
-    except Exception as e :
-        print(" Failed to fetched Ip from the Application ")
 
 
     #Reopen the Enova VPN
@@ -263,5 +275,5 @@ for server in servers:
 
 
 
-# Quit the driver at the end
+# Quit the driver
 driver.quit()
