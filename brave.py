@@ -1,244 +1,185 @@
 import time
+import re
 from appium import webdriver
+from appium.options.android import UiAutomator2Options
+from appium.webdriver.common.appiumby import AppiumBy
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from appium.webdriver.common.appiumby import AppiumBy
-from appium.options.android import UiAutomator2Options
-import re
 
-# # Define desired capabilities using UiAutomator2Options
-# options = UiAutomator2Options()
-# options.platform_name = "Android"
-# options.platform_version = "16"  # Change according to your device version
-# options.device_name = "emulator-5554"  # Use 'adb devices' to check the device name
-# options.app = "D:/EnovaVPN.apk"  # Provide the correct path to your APK file
-# options.app_package = "com.enovavpn.mobile"  # Replace with your app's package name
-# options.app_activity = "com.enovavpn.mobile.MainActivity"  # Replace with your app's main activity
-# options.automation_name = "UiAutomator2"
-# options.no_reset = True  # Set to False if you want a fresh install every time
-
-
-#Connect local device with desired capabilities using UiAutomator2Options
-
-
+# Appium Desired Capabilities
 options = UiAutomator2Options()
 options.platform_name = "Android"
-options.platform_version = "14"  # Set your actual Android version
-options.device_name = "RZCTA02JRZP"  # Use your real device ID from `adb devices`
-options.app = "D:/EnovaVPN.apk"  # Ensure the correct path to the APK
-options.app_package = "com.enovavpn.mobile"  # Replace with your actual app's package name
-options.app_activity = "com.enovavpn.mobile.MainActivity"  # Replace with the correct main activity
+options.platform_version = "14"  # Your actual Android version
+options.device_name = "RZCTA02JRZP"  # Your real device ID
+options.app = "D:/EnovaVPN.apk"  # APK path
+options.app_package = "com.enovavpn.mobile"
+options.app_activity = "com.enovavpn.mobile.MainActivity"
 options.automation_name = "UiAutomator2"
-options.no_reset = True  # Set to False if you want a fresh install every time
-options.new_command_timeout = 300  # Prevent session timeout
-options.auto_grant_permissions = True  # Auto-grant required permissions
-
-# Optional: Ensure Appium detects the correct activity
+options.no_reset = True
+options.new_command_timeout = 300
+options.auto_grant_permissions = True
 options.ensure_webviews_have_pages = True
-options.dont_stop_app_on_reset = True  # Keeps the app running when reconnecting
+options.dont_stop_app_on_reset = True
 
 # Connect to Appium Server
 driver = webdriver.Remote("http://127.0.0.1:4723/wd/hub", options=options)
-
-# Wait for the app to load
-time.sleep(5)
+time.sleep(5)  # Wait for app to load
 
 
-
-
-
+def scroll_and_click(element_text):
+    """ Scrolls down until an element with given text is found and clicks it. """
+    try:
+        scrollable_element = driver.find_element(
+            AppiumBy.ANDROID_UIAUTOMATOR,
+            f'new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView(new UiSelector().descriptionContains("{element_text}"));'
+        )
+        scrollable_element.click()
+        print(f"✅ {element_text} dropdown opened successfully!")
+    except Exception as e:
+        print(f"❌ Failed to open {element_text} dropdown:", e)
 
 
 def connect_disconnect_server(server_name):
-    """
-    This function will select the given server, connect to it,
-    disconnect, and print the extracted IP address.
-    It will also close any pop-up message after displaying the IP address.
-    """
+    """ Automates the process of connecting, checking IP, and disconnecting from a VPN server. """
+
     # Open the server list
     try:
         wait = WebDriverWait(driver, 100)
-        # Open the Server list
-        server = wait.until(EC.presence_of_element_located(
+        server_list = wait.until(EC.presence_of_element_located(
             (By.XPATH, '//android.view.View[contains(@content-desc, "Auto")]')
         ))
-        server.click()
-        print('Server list is opened')
+        server_list.click()
+        print("✅ Server list opened")
     except Exception as e:
-        print("Server list is not Opened ", e)
+        print("❌ Server list not opened:", e)
 
-   # Open the USA dropdown to display the list of servers
+    # Scroll and open other country dropdowns
+    countries = ["USA","Germany", "Singapore", "Netherlands"]
+    for country in countries:
+        scroll_and_click(country)
+
+
+
+    try:
+     # Scroll to the server by name
+            server_element = driver.find_element(
+                AppiumBy.ANDROID_UIAUTOMATOR,
+                f'new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView(new UiSelector().descriptionContains("{server_name}"));'
+            )
+            server_element.click()
+            #print(f"✅ {server_name} server selected successfully!")
+    except Exception as e:
+            print(f"❌ Could not find or select {server_name}: {e}")
+
+
+
+    # Connect the server
     try:
         wait = WebDriverWait(driver, 50)
-        USA_button = wait.until(EC.element_to_be_clickable(
-            (By.XPATH, '//*[contains(@content-desc, "USA")]')))  # Update XPath as needed
-        USA_button.click()  # This should trigger the dropdown
-        print("USA dropdown button clicked, dropdown should now open.")
-    except Exception as e:
-        print('Failed to Open USA DropDown:', str(e))
-
-    #Scroll for the server list
-    try:
-        # Scroll to the server by name
-        server_element = driver.find_element(
-            AppiumBy.ANDROID_UIAUTOMATOR,
-            f'new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView(new UiSelector().descriptionContains("{server_name}"));'
-        )
-        server_element.click()
-        print(f"✅ {server_name} server selected successfully!")
-    except Exception as e:
-        print(f"❌ Could not find or select {server_name}: {e}")
-
-    try:
-        wait = WebDriverWait(driver, 50)
-        # Locate and click on the server by name (server_name)
         server_element = wait.until(EC.presence_of_element_located(
             (By.XPATH, f'//*[contains(@content-desc, "{server_name}")]')))
-
         server_element.click()
-        print(f"{server_name} server is selected")
 
-        # Wait and click on the "Disconnected" button to connect
+        # Click the "Disconnected" button to connect
         connect_button = wait.until(EC.element_to_be_clickable(
             (By.XPATH, '//android.view.View[contains(@content-desc, "Disconnected")]/android.widget.ImageView[3]')))
         connect_button.click()
 
-        print(f'{server_name} server is connected')
+        print(f"✅ {server_name} server connected")
     except Exception as e:
-        print(f"{server_name} server is not selected or connected", e)
+        print(f"❌ {server_name} server not connected:", e)
 
-    # Check the IP address in the app
+    # Check IP Address
     try:
-        print("Checking the ip address using IP Info app")
-       # check_ip_in_browser(server_name)
+        app_package = "cz.webprovider.whatismyipaddress"
+        app_activity = "cz.webprovider.whatismyipaddress.MainActivity"
+        refresh_button_id = "cz.webprovider.whatismyipaddress:id/refresh_info"
+        ip_display_id = "cz.webprovider.whatismyipaddress:id/zobraz_ip"
 
+        # Open IP Info app
+        driver.execute_script("mobile: shell", {"command": f"am start -n {app_package}/{app_activity}"})
+        time.sleep(3)
+
+        # Refresh IP
+        refresh_button = driver.find_element(AppiumBy.ID, refresh_button_id)
+        for _ in range(3):  # Tap refresh multiple times
+            refresh_button.click()
+            time.sleep(1)
+
+        # Get displayed IP
+        wait = WebDriverWait(driver, 30)
+        ip_element = wait.until(EC.presence_of_element_located((AppiumBy.ID, ip_display_id)))
+        ip_address = ip_element.text.strip()
+
+        print(f"🌍 IP Address for {server_name}: {ip_address}")
+
+        # Close the IP Info app
+        driver.execute_script("mobile: shell", {"command": "input keyevent KEYCODE_HOME"})
     except Exception as e:
-        print("IP is not checked through the app", e)
+        print("❌ Failed to fetch IP:", e)
 
-    # Disconnect the server
+    # Reopen Enova VPN
+    try:
+        enova_vpn_package = "com.enovavpn.mobile"
+        enova_vpn_activity = "com.enovavpn.mobile.MainActivity"
+        driver.execute_script("mobile: shell", {"command": f"am start -n {enova_vpn_package}/{enova_vpn_activity}"})
+        time.sleep(8)
+        print("✅ Switched back to Enova VPN")
+    except Exception as e:
+        print("❌ Failed to reopen Enova VPN:", e)
+
+    # Disconnect from server
     try:
         wait = WebDriverWait(driver, 50)
-
-        # Click on the "Connected" button to disconnect
-        turn_on_button = wait.until(EC.presence_of_element_located(
-            (By.XPATH, '//android.view.View[contains(@content-desc, "Connected")]/android.widget.ImageView[3]')))
-        turn_on_button.click()
-
-        # Click "Disconnect" button
         disconnect_button = wait.until(EC.presence_of_element_located(
-            (By.XPATH, '//android.view.View[@content-desc="DISCONNECT"]')))
+            (By.XPATH, '//android.view.View[contains(@content-desc, "Connected")]/android.widget.ImageView[3]')))
         disconnect_button.click()
-        print(f"{server_name} server disconnected")
 
-        # Locate the element containing the IP address
+        confirm_disconnect = wait.until(EC.presence_of_element_located(
+            (By.XPATH, '//android.view.View[@content-desc="DISCONNECT"]')))
+        confirm_disconnect.click()
+
+        print(f"🔌 {server_name} disconnected")
+
+        # Extract and display IP after disconnecting
         ip_element = wait.until(EC.presence_of_element_located(
             (By.XPATH, '//android.view.View[contains(@content-desc, ".")]')))
-
-        # Extract the IP address from content-desc
         content_desc = ip_element.get_attribute("content-desc")
 
-        # Regular expression to match an IPv4 address
         ip_pattern = r'\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b'
         match = re.search(ip_pattern, content_desc)
-
         if match:
-            print(f"Extracted IP Address for {server_name}: {match.group()}")
+            print(f"🔄 Extracted IP Address after disconnecting: {match.group()}")
         else:
-            print(f"No IP Address found for {server_name}")
+            print("⚠️ No IP Address found after disconnecting")
     except Exception as e:
-        print(f"Error while disconnecting or extracting IP for {server_name}: ", e)
+        print(f"❌ Error while disconnecting from {server_name}:", e)
 
-    # Close the pop-up message if it appears
+    # Handle any pop-ups
     try:
         wait = WebDriverWait(driver, 50)
-        # Locate and click on the close button for the pop-up
         close_popup = wait.until(EC.presence_of_element_located(
             (By.XPATH,
-             '//android.widget.FrameLayout[@resource-id="android:id/content"]/android.widget.FrameLayout/android.view.View/android.view.View/android.view.View[1]/android.view.View/android.view.View/android.view.View[2]/android.widget.ImageView[1]')
-        ))
+             '//android.widget.FrameLayout/android.widget.FrameLayout/android.view.View[2]/android.widget.ImageView[1]')))
         close_popup.click()
-        print(f"Pop-up for {server_name} closed")
+        print(f"✅ Closed pop-up for {server_name}")
     except Exception as e:
-        print(f"Failed to close pop-up for {server_name}: ", e)
+        print(f"❌ No pop-up to close for {server_name}:", e)
 
 
+# List of servers to test
+print("🌐 Checking WireGuard Protocol")
+servers = [
+    "France", "Indonesia", "South Korea", "Brazil", "Canada",
+    "Poland", "United Kingdom", "Germany - 1", "Germany - 2", "Germany - 6",
+    "Germany - 7", "Germany - 8", "USA - 1", "USA - 6", "USA - 5",
+    "Singapore", "Singapore - 7", "Netherlands - 3", "Netherlands - 1"
+]
 
-
-# def check_ip_in_browser(server_name):
-#     """
-#     Opens Brave browser in the emulator, navigates to an IP-checking website,
-#     extracts the displayed IP address, then reopens Enova VPN.
-#     """
-#     try:
-#         # Open Brave browser using ADB shell command
-#         print("Opening Brave browser...")
-#         driver.execute_script("mobile: shell", {
-#             "command": "am start -n com.brave.browser/org.chromium.chrome.browser.ChromeTabbedActivity"
-#         })
-#         time.sleep(5)
-#
-#         # Wait for the URL bar and enter the IP-check website
-#         wait = WebDriverWait(driver, 50)
-#         url_bar = wait.until(EC.presence_of_element_located(
-#             (By.ID, 'com.brave.browser:id/url_bar')  # Ensure this is the correct ID
-#         ))
-#         url_bar.click()
-#         url_bar.send_keys("https://www.myip.com\n")
-#         # Explicitly press Enter/Go button
-#         driver.execute_script("mobile: performEditorAction", {"action": "search"})
-#         time.sleep(10)  # Wait for the page to load
-#
-#
-#         # Extract the displayed IP address using the provided XPath
-#         ip_element = wait.until(EC.presence_of_element_located(
-#             (By.XPATH, "//span[@id='ip']")
-#         ))
-#
-#         displayed_ip = ip_element.text.strip()  # Get the extracted IP
-#         print(f"✅ Displayed IP Address in Brave Browser for {server_name}: {displayed_ip}")
-#
-#     except Exception as e:
-#         print(f"❌ Error while checking IP in Brave browser for {server_name}: {e}")
-#         displayed_ip = None  # Ensure function doesn't break on failure
-#
-#     finally:
-#         # Return to home screen before switching VPNs
-#         print("Closing Brave and reopening Enova VPN...")
-#         driver.execute_script("mobile: shell", {"command": "input keyevent KEYCODE_HOME"})
-#         time.sleep(3)
-#
-#         # Reopen Enova VPN
-#         reopen_enova_vpn()
-#
-#     return displayed_ip
-
-
-# def reopen_enova_vpn():
-#     """
-#     Reopens the Enova VPN application to continue execution.
-#     """
-#     try:
-#         app_package = "com.enovavpn.mobile"
-#         app_activity = "com.enovavpn.mobile.MainActivity"
-#
-#         print("Reopening Enova VPN...")
-#         command = f"am start -n {app_package}/{app_activity}"
-#         driver.execute_script("mobile: shell", {"command": command})
-#
-#         time.sleep(8)  # Give time for the app to launch
-#         print("✅ Enova VPN app reopened successfully.")
-#
-#     except Exception as e:
-#         print("❌ Failed to reopen Enova VPN:", e)
-
-
-# List of servers to connect to
-servers = [ "France", "Singapore","Indonesia", "South Korea", "Germany - 3", "USA - 1", "USA - 2", "USA - 5"]
-
-# Loop through the server list and call the function for each server
+# Loop through servers
 for server in servers:
     connect_disconnect_server(server)
 
-# Quit the driver at the end
+# Quit the driver
 driver.quit()
