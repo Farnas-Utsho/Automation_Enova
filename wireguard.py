@@ -200,7 +200,7 @@ def connect_disconnect_server(server_name):
         enova_vpn_activity = "com.enovavpn.mobile.MainActivity"
         print("Switching back to Enova VPN to change server...")
         driver.execute_script("mobile: shell", {"command": f"am start -n {enova_vpn_package}/{enova_vpn_activity}"})
-        time.sleep(8)  # Give time for the Enova VPN app to load
+        time.sleep(10)  # Give time for the Enova VPN app to load
 
     except Exception as e :
         print("Failed to reopen the Enova VPN")
@@ -212,14 +212,28 @@ def connect_disconnect_server(server_name):
         turn_on_button = wait.until(EC.presence_of_element_located(
             (By.XPATH, '//android.view.View[contains(@content-desc, "Connected")]/android.widget.ImageView[3]')))
         turn_on_button.click()
+        time.sleep(3)
+    except Exception as e :
+        print("Failed to Click on Connected button",e)
 
-        # Click "Disconnect" button
+
+    # Click "Disconnect" button in the pop-up
+    try:
+        wait = WebDriverWait(driver, 60)
+
         disconnect_button = wait.until(EC.presence_of_element_located(
             (By.XPATH, '//android.view.View[@content-desc="DISCONNECT"]')))
         disconnect_button.click()
-        #print(f"{server_name} server disconnected")
+    except Exception as e :
+        print(f"{server_name} server disconnected")
 
-        # Locate the element containing the IP address
+
+
+
+    # Locate the element containing the IP address
+    try :
+        wait = WebDriverWait(driver, 50)
+
         ip_element = wait.until(EC.presence_of_element_located(
             (By.XPATH, '//android.view.View[contains(@content-desc, ".")]')))
 
@@ -241,12 +255,12 @@ def connect_disconnect_server(server_name):
         else:
             print(f"No IP Address found for {server_name}")
     except Exception as e:
-        print(f"Error while disconnecting or extracting IP for {server_name}: ", e)
+        print(f"Error while extracting IP for {server_name}: ", e)
 
     # Close the pop-up message
     try:
 
-        wait = WebDriverWait(driver, 50)
+        wait = WebDriverWait(driver, 120)
         # Locate and click on the close button for the pop-up
         close_popup = wait.until(EC.presence_of_element_located(
             (By.XPATH,
