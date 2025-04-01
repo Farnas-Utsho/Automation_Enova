@@ -76,7 +76,7 @@ def connect_disconnect_server(server_name):
     #Opening all the server lists
     try:
         # Scroll and open other country dropdowns
-        countries = ["USA", "Singapore", "Netherlands"]
+        countries = ["USA", "Singapore","Netherlands"]
         for country in countries:
             scroll_and_click(country)
 
@@ -200,7 +200,7 @@ def connect_disconnect_server(server_name):
         enova_vpn_activity = "com.enovavpn.mobile.MainActivity"
         print("Switching back to Enova VPN to change server...")
         driver.execute_script("mobile: shell", {"command": f"am start -n {enova_vpn_package}/{enova_vpn_activity}"})
-        time.sleep(10)  # Give time for the Enova VPN app to load
+
 
     except Exception as e :
         print("Failed to reopen the Enova VPN")
@@ -212,7 +212,7 @@ def connect_disconnect_server(server_name):
         turn_on_button = wait.until(EC.presence_of_element_located(
             (By.XPATH, '//android.view.View[contains(@content-desc, "Connected")]/android.widget.ImageView[3]')))
         turn_on_button.click()
-        time.sleep(3)
+
     except Exception as e :
         print("Failed to Click on Connected button",e)
 
@@ -260,7 +260,7 @@ def connect_disconnect_server(server_name):
     # Close the pop-up message
     try:
 
-        wait = WebDriverWait(driver, 120)
+        wait = WebDriverWait(driver, 50)
         # Locate and click on the close button for the pop-up
         close_popup = wait.until(EC.presence_of_element_located(
             (By.XPATH,
@@ -281,8 +281,8 @@ def connect_disconnect_server(server_name):
 print("Checking the Wireguard Protocol")
 servers = [ "France", "Indonesia", "South Korea","Brazil","Canada","Poland","United Kingdom",
                                                     "USA - 1", "USA - 6", "USA - 5","Singapore","Singapore - 7","Netherlands - 3","Netherlands - 1"]
-#servers = [ "France", "Indonesia", "South Korea","Brazil","Canada","Poland","United Kingdom","Germany - 1","Germany - 2" ,"Germany - 6","Germany - 7","Germany - 8"
-                                                    #,"USA - 1", "USA - 6", "USA - 5","Singapore","Singapore - 7","Netherlands - 3","Netherlands - 1"]
+# servers = [ "France", "Indonesia", "South Korea","Brazil","Canada","Poland","United Kingdom","Germany - 1","Germany - 2" ,"Germany - 6","Germany - 7","Germany - 8"
+#                                                     ,"USA - 1", "USA - 6", "USA - 5","Singapore","Singapore - 7","Netherlands - 3","Netherlands - 1"]
 # Loop through the server list and call the function for each server
 for server in servers:
     connect_disconnect_server(server)
