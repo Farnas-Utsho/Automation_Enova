@@ -76,7 +76,7 @@ def connect_disconnect_server(server_name):
     #Opening all the server lists
     try:
         # Scroll and open other country dropdowns
-        countries = ["USA", "Singapore","Netherlands"]
+        countries = ["Germany"]
         for country in countries:
             scroll_and_click(country)
 
@@ -279,11 +279,10 @@ def connect_disconnect_server(server_name):
 # List of servers to connect to
 
 print("Checking the Wireguard Protocol")
-servers = [ "France", "Indonesia", "South Korea","Brazil","Canada","Poland","United Kingdom",
-                                                    "USA - 1", "USA - 6", "USA - 5","Singapore","Singapore - 7","Netherlands - 3","Netherlands - 1"]
-# servers = [ "France", "Indonesia", "South Korea","Brazil","Canada","Poland","United Kingdom","Germany - 1","Germany - 2" ,"Germany - 6","Germany - 7","Germany - 8"
-#                                                     ,"USA - 1", "USA - 6", "USA - 5","Singapore","Singapore - 7","Netherlands - 3","Netherlands - 1"]
-# Loop through the server list and call the function for each server
+
+servers = [ "Germany - 1","Germany - 2" ,"Germany - 6","Germany - 7","Germany - 8"]
+
+#Loop through the server list and call the function for each server
 for server in servers:
     connect_disconnect_server(server)
 

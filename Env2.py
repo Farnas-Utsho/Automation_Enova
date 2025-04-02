@@ -1,77 +1,85 @@
-from asyncio import timeout
-from traceback import print_tb
-
-from appium import webdriver
-from appium.options.android import UiAutomator2Options  # Import options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC, wait
+import re
 import time
 
-# Define desired capabilities using UiAutomator2Options
+from appium import webdriver
+from appium.options.android import UiAutomator2Options
+from appium.webdriver.common.appiumby import AppiumBy
+from selenium.common import TimeoutException, NoSuchElementException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
+
+# Connect local device with desired capabilities using UiAutomator2Options
 options = UiAutomator2Options()
 options.platform_name = "Android"
-options.platform_version = "16"  # Change according to your device version
-options.device_name = "emulator-5554"  # Use 'adb devices' to check the device name
-options.app = "D:/EnovaVPN.apk"  # Provide the correct path to your APK file
-options.app_package = "com.enovavpn.mobile"  # Replace with your app's package name
-options.app_activity = "com.enovavpn.mobile.MainActivity"  # Replace with your app's main activity
+options.platform_version = "14"  # Set your actual Android version
+options.device_name = "RZCTA02JRZP"  # Use your real device ID from `adb devices`
+options.app = "D:/EnovaVPN.apk"  # Ensure the correct path to the APK
+options.app_package = "com.enovavpn.mobile"  # Replace with your actual app's package name
+options.app_activity = "com.enovavpn.mobile.MainActivity"  # Replace with the correct main activity
 options.automation_name = "UiAutomator2"
 options.no_reset = True  # Set to False if you want a fresh install every time
+options.new_command_timeout = 300  # Prevent session timeout
+options.auto_grant_permissions = True  # Auto-grant required permissions
+
+# Optional: Ensure Appium detects the correct activity
+options.ensure_webviews_have_pages = True
+options.dont_stop_app_on_reset = True  # Keeps the app running when reconnecting
+
 
 # Connect to Appium Server
 driver = webdriver.Remote("http://127.0.0.1:4723/wd/hub", options=options)
 
 # Wait for the app to load
 time.sleep(5)
+# Click Login Button
+try:
+    wait = WebDriverWait(driver, 20)
+    login_button = wait.until(EC.presence_of_element_located((By.XPATH, '//android.view.View[@content-desc="LOGIN"]')))
+    login_button.click()
+except Exception as e:
+    print("Login button not found:", e)
 
-# # # Click Login Button
-# # try:
-# #     wait = WebDriverWait(driver, 20)
-# #     login_button = wait.until(EC.presence_of_element_located((By.XPATH, '//android.view.View[@content-desc="LOGIN"]')))
-# #     login_button.click()
-# # except Exception as e:
-# #     print("Login button not found:", e)
-# #
-# # # Input Email
-# # try:
-# #     wait = WebDriverWait(driver, 50)
-# #     email = wait.until(EC.presence_of_element_located((By.XPATH, '//android.widget.FrameLayout[@resource-id="android:id/content"]/android.widget.FrameLayout/android.view.View/android.view.View/android.view.View/android.view.View/android.view.View/android.widget.ImageView[2]')))
-# #     email.click()
-# #     email.clear()
-# #     email.send_keys('vaskar@nagorik.tech')
-# # except Exception as e:
-# #     print("Email field not found:", e)
-# #
-# # # Input Password
-# # try:
-# #     wait = WebDriverWait(driver, 50)
-# #     password = wait.until(EC.presence_of_element_located((By.XPATH, '//android.widget.EditText')))
-# #     password.click()
-# #     password.clear()
-# #     password.send_keys('A12345678')
-# # except Exception as e:
-# #     print("Password field not found:", e)
-# #
-# # # Show Password (Optional)
-# # try:
-# #     wait = WebDriverWait(driver, 20)
-# #     show_password = wait.until(EC.presence_of_element_located((By.XPATH, '//android.widget.EditText/android.widget.ImageView[2]')))
-# #     show_password.click()
-# # except Exception as e:
-# #     print("Show password button not found, skipping:", e)
-# #
-# # # Click Sign-in
-# # try:
-# #     wait = WebDriverWait(driver, 20)
-# #     signin_button = wait.until(EC.presence_of_element_located((By.XPATH, '//android.view.View[@content-desc="SIGN IN"]')))
-# #     signin_button.click()
-# # except Exception as e:
-# #     print("Sign-in button not found:", e)
-# #
-# #
-# #
-# # # #log in successful
+# Input Email
+try:
+    wait = WebDriverWait(driver, 50)
+    email = wait.until(EC.presence_of_element_located((By.XPATH, '//android.widget.FrameLayout[@resource-id="android:id/content"]/android.widget.FrameLayout/android.view.View/android.view.View/android.view.View/android.view.View/android.view.View/android.widget.ImageView[2]')))
+    email.click()
+    email.clear()
+    email.send_keys('vaskar@nagorik.tech')
+except Exception as e:
+    print("Email field not found:", e)
+
+# Input Password
+try:
+    wait = WebDriverWait(driver, 50)
+    password = wait.until(EC.presence_of_element_located((By.XPATH, '//android.widget.EditText')))
+    password.click()
+    password.clear()
+    password.send_keys('A12345678')
+except Exception as e:
+    print("Password field not found:", e)
+
+# Show Password (Optional)
+try:
+    wait = WebDriverWait(driver, 20)
+    show_password = wait.until(EC.presence_of_element_located((By.XPATH, '//android.widget.EditText/android.widget.ImageView[2]')))
+    show_password.click()
+except Exception as e:
+    print("Show password button not found, skipping:", e)
+
+# Click Sign-in
+try:
+    wait = WebDriverWait(driver, 20)
+    signin_button = wait.until(EC.presence_of_element_located((By.XPATH, '//android.view.View[@content-desc="SIGN IN"]')))
+    signin_button.click()
+except Exception as e:
+    print("Sign-in button not found:", e)
+
+
+
+# #log in successful
 #
 #
 # #Open the vpn list
