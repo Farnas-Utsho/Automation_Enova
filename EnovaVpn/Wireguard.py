@@ -61,7 +61,7 @@ def connect_disconnect_server(server_name):
         server.click()
         time.sleep(2)
 
-        # Open the country dropdowns
+         # Open the country dropdowns
         for country in ["USA", "Singapore", "Netherlands", "Germany"]:
             scroll_and_click(country)
 
