@@ -13,8 +13,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 # Connect local device with desired capabilities using UiAutomator2Options
 options = UiAutomator2Options()
 options.platform_name = "Android"
-options.platform_version = "14"  # Set your actual Android version
-options.device_name = "RZCTA02JRZP"  # Use your real device ID from `adb devices`
+options.platform_version = "12"  # Set your actual Android version
+options.device_name = "10ECBH02JJ000D2"  # Use your real device ID from `adb devices`
 options.app = "D:/EnovaVPN.apk"  # Ensure the correct path to the APK
 options.app_package = "com.enovavpn.mobile"  # Replace with your actual app's package name
 options.app_activity = "com.enovavpn.mobile.MainActivity"  # Replace with the correct main activity
@@ -43,8 +43,13 @@ def scroll_and_click(element_text):
             f'new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView(new UiSelector().descriptionContains("{element_text}"));'
         )))
         scrollable_element.click()
+        return True  # Element found and clicked
+    except TimeoutException:
+        print(f"❌ {element_text} not found during scrolling.")
+        return False  # Return False if the element isn't found
     except Exception as e:
         print(f"❌ Failed to open {element_text} dropdown: {e}")
+        return False  # Return False if another error occurs
 
 
 def connect_disconnect_server(server_name):
@@ -66,11 +71,20 @@ def connect_disconnect_server(server_name):
             scroll_and_click(country)
 
         # Select the specific server
-        server_element = wait.until(EC.presence_of_element_located((
-            AppiumBy.ANDROID_UIAUTOMATOR,
-            f'new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView(new UiSelector().descriptionContains("{server_name}"));'
-        )))
-        server_element.click()
+        if not scroll_and_click(server_name):
+            # If the server isn't found, print a message and return to continue with the next server
+            print(f"❌ Server {server_name} not found. Moving to next server.")
+            # Click on the Back Navigation
+            try:
+                driver.execute_script('mobile: shell', {
+                    'command': 'input',
+                    'args': ['tap', 64, 118]
+                })
+                time.sleep(2)  # Wait for protocol to switch
+            except Exception as e:
+                print("Back navigation not found")
+            return  # This returns from the function, thus skipping the rest of the steps and moving to the next server in the loop
+
         print(f"✅ {server_name} selected.")
 
         # Click Connect button
@@ -80,13 +94,16 @@ def connect_disconnect_server(server_name):
 
     except Exception as e:
         print(f"❌ {server_name} - Connection failed: {e}")
-        return  # Skip this server and continue with the next one
+
+
+
 
     # Fetch IP Address from IP Info App
     try:
         ip_address = get_ip_from_app()
     except Exception as e:
         print(f"❌ {server_name} - Failed to fetch IP: {e}")
+        return
 
     # Switch back to Enova VPN
     try:
@@ -94,6 +111,7 @@ def connect_disconnect_server(server_name):
         time.sleep(2)
     except Exception as e:
         print(f"❌ {server_name} - Failed to reopen Enova VPN: {e}")
+        return
 
     # Disconnect the VPN
     try:
@@ -105,6 +123,7 @@ def connect_disconnect_server(server_name):
         print(f"🔌 {server_name} disconnected successfully.")
     except Exception as e:
         print(f"❌ {server_name} - Disconnection failed: {e}")
+        return
 
     # Validate IP
     try:
@@ -123,6 +142,7 @@ def connect_disconnect_server(server_name):
             print(f"No IP Address found for {server_name}")
     except Exception as e:
         print(f"⚠️ Error extracting IP for {server_name}: {e}")
+        return
 
     # Close the pop-up
     try:
@@ -132,6 +152,7 @@ def connect_disconnect_server(server_name):
         print(f"✅ Pop-up for {server_name} closed.")
     except Exception as e:
         print(f"⚠️ Failed to close pop-up for {server_name}: {e}")
+        return
 
 
 def get_ip_from_app():
@@ -171,8 +192,8 @@ def get_ip_from_app():
 
 print("\n################################### IPsec Protocol ############################################")
 
-servers = ["USA - 1", "USA - 2", "USA - 5", "USA - 6", "Germany - 1", "Germany - 2", "Germany - 6", "Germany - 7",
-           "Germany - 8", "Singapore", "Singapore - 2", "Singapore - 7", "Netherlands - 1", "Netherlands - 3",
+# List of servers to connect to
+servers = ["Germany - 1", "Germany - 2", "Germany - 5", "Germany 9", "Singapore", "Singapore - 2", "Singapore - 7", "Netherlands - 1", "Netherlands - 3",
            "France", "Indonesia", "South Korea", "Canada", "Poland", "United Kingdom"]
 
 # Loop through servers and attempt connections

@@ -13,8 +13,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 # Connect local device with desired capabilities using UiAutomator2Options
 options = UiAutomator2Options()
 options.platform_name = "Android"
-options.platform_version = "14"  # Set your actual Android version
-options.device_name = "RZCTA02JRZP"  # Use your real device ID from `adb devices`
+options.platform_version = "12"  # Set your actual Android version
+options.device_name = "10ECBH02JJ000D2"  # Use your real device ID from `adb devices`
 options.app = "D:/EnovaVPN.apk"  # Ensure the correct path to the APK
 options.app_package = "com.enovavpn.mobile"  # Replace with your actual app's package name
 options.app_activity = "com.enovavpn.mobile.MainActivity"  # Replace with the correct main activity
@@ -61,7 +61,7 @@ def connect_disconnect_server(server_name):
         server.click()
         time.sleep(2)
 
-         # Open the country dropdowns
+        # Open the country dropdowns
         for country in ["USA", "Singapore", "Netherlands", "Germany"]:
             scroll_and_click(country)
 
@@ -176,16 +176,3 @@ servers = ["France", "Indonesia", "South Korea", "Brazil", "Canada", "Poland", "
 # Loop through the server list and call the function for each server
 for server in servers:
         connect_disconnect_server(server)
-
-
-
-
-
-
-
-
-
-
-
-
-

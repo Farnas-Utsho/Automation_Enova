@@ -14,7 +14,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 options = UiAutomator2Options()
 options.platform_name = "Android"
 options.platform_version = "14"  # Set your actual Android version
-options.device_name = "RZCTA02JRZP"  # Use your real device ID from `adb devices`
+options.device_name = "10ECBH02JJ000D2" # Use your real device ID from `adb devices`
 options.app = "D:/EnovaVPN.apk"  # Ensure the correct path to the APK
 options.app_package = "com.enovavpn.mobile"  # Replace with your actual app's package name
 options.app_activity = "com.enovavpn.mobile.MainActivity"  # Replace with the correct main activity
@@ -38,7 +38,7 @@ time.sleep(5)
 def scroll_and_click(element_text):
     """ Scrolls down until an element with the given text is found and clicks it. """
     try:
-        wait = WebDriverWait(driver, 10)
+        wait = WebDriverWait(driver, 50)
         scrollable_element = wait.until(EC.presence_of_element_located((
             AppiumBy.ANDROID_UIAUTOMATOR,
             f'new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView(new UiSelector().descriptionContains("{element_text}"));'
@@ -55,7 +55,7 @@ def connect_disconnect_server(server_name):
     print(f"\n🚀 Attempting to connect to {server_name}...")
 
     try:
-        wait = WebDriverWait(driver, 10)
+        wait = WebDriverWait(driver, 50)
 
         # Open the Server List
         server = wait.until(EC.presence_of_element_located((By.XPATH, '//android.view.View[contains(@content-desc, "Auto")]')))
@@ -145,7 +145,7 @@ def get_ip_from_app():
     time.sleep(5)
 
     try:
-        refresh_button = WebDriverWait(driver, 10).until(
+        refresh_button = WebDriverWait(driver, 50).until(
             EC.presence_of_element_located((By.ID, "cz.webprovider.whatismyipaddress:id/refresh_info"))
         )
         refresh_button.click()
@@ -169,13 +169,27 @@ def get_ip_from_app():
         driver.execute_script("mobile: shell", {"command": "input keyevent KEYCODE_HOME"})
         print("📱 Returned to home screen.")
 
-print("################################### Wireguard Protocol ############################################")
 
-servers = ["France", "Indonesia", "South Korea" , "Germany - 3",
-            "USA - 1", "USA - 2", "USA - 5", "Singapore", "Netherlands - 1"]
+
+
+
+print("################################### Shadowsocks ############################################")
+
+servers = ["France", "Indonesia", "South Korea", "Germany - 3",
+               "USA - 1", "USA - 2", "USA - 5", "Singapore", "Netherlands - 1"]
 # Loop through the server list and call the function for each server
 for server in servers:
-        connect_disconnect_server(server)
+  connect_disconnect_server(server)
+
+# def run_Shadowsocks():
+#     print("################################### Shadowsocks ############################################")
+#
+#     servers = ["France", "Indonesia", "South Korea", "Germany - 3",
+#                "USA - 1", "USA - 2", "USA - 5", "Singapore", "Netherlands - 1"]
+#     # Loop through the server list and call the function for each server
+#     for server in servers:
+#         connect_disconnect_server(server)
+
 
 
 
