@@ -307,11 +307,14 @@ def ipsec(driver):
         "command": "am start -n com.enovavpn.mobile/com.enovavpn.mobile.MainActivity"
     })
     time.sleep(3)  # Give it time to load
-    print("################################### Wireguard Protocol ############################################")
+    print("################################### IPsec Protocol ############################################")
 
-    servers = ["USA - 1", "USA - 2", "USA - 5", "USA - 6", "Germany - 1", "Germany - 2", "Germany - 6",
-               "Germany - 8", "Singapore", "Singapore - 2", "Singapore - 7", "Netherlands - 1", "Netherlands - 3",
-               "France", "Indonesia", "South Korea", "Canada", "Poland", "United Kingdom"]
+   # servers = ["USA - 1", "USA - 2", "USA - 5", "USA - 6", "Germany - 1", "Germany - 2", "Germany - 6",
+              # "Germany - 8", "Singapore", "Singapore - 2", "Singapore - 7", "Netherlands - 1", "Netherlands - 3",
+              # "France", "Indonesia", "South Korea", "Canada", "Poland", "United Kingdom"]
+    servers = ["USA - 1",  "Germany - 1", "Germany - 16",
+               "Germany - 8", "Singapore", "Netherlands - 3",
+               "France", ]
 
     for server in servers:
         connect_disconnect_server(driver, server)

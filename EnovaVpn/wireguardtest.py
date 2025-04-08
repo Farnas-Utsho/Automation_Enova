@@ -298,8 +298,10 @@ def wireguard(driver):
     time.sleep(3)  # Give it time to load
     print("################################### Wireguard Protocol ############################################")
 
-    servers = ["France", "Indonesia", "South Korea", "Brazil", "Canada", "Poland", "United Kingdom", "Germany - 1",
-               "USA - 1", "USA - 6", "USA - 5", "Singapore", "Singapore - 7", "Netherlands - 3", "Netherlands - 1"]
+   # servers = ["France", "Indonesia", "South Korea", "Brazil", "Canada", "Poland", "United Kingdom", "Germany - 1",
+              # "USA - 1", "USA - 6", "USA - 5", "Singapore", "Singapore - 7", "Netherlands - 3", "Netherlands - 1"]
+    servers = ["France", "Indonesia", "Poland", "United Kingdom", "Germany - 11",
+               "USA - 1", "Singapore - 7", "Netherlands - 1"]
 
     for server in servers:
         connect_disconnect_server(driver, server)
