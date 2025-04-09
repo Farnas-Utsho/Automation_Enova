@@ -1,0 +1,11 @@
+VPN Test Report - EnovaVPN - Protocol: Shadowsocks - 2025-04-09 13:57:33
+
+Server Name,Enova IP,IP Info IP,IP Match Status,Connection Status
+Indonesia,172.232.231.191,172.232.231.191,✅ IP Matched,✅ Connected
+South Korea,141.164.63.32,141.164.63.32,✅ IP Matched,✅ Connected
+Germany - 3,62.84.183.48,,❌ IP Not Matched,✅ Connected
+USA - 1,144.126.146.38,144.126.146.38,✅ IP Matched,✅ Connected
+USA - 2,N/A,162.120.71.217,❌ Error Extracting IP,✅ Connected
+USA - 5,149.28.106.134,149.28.106.134,✅ IP Matched,✅ Connected
+Singapore,192.53.172.74,192.53.172.74,✅ IP Matched,✅ Connected
+Netherlands - 1,194.127.178.196,,❌ IP Not Matched,✅ Connected

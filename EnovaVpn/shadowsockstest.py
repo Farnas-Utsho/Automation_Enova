@@ -41,7 +41,7 @@ import os
 from datetime import datetime
 
 # Set globally once per session or protocol test
-PROTOCOL_NAME = "IPSec"  # <- You can change this dynamically if needed
+PROTOCOL_NAME = "Shadowsocks"  # <- You can change this dynamically if needed
 VPN_NAME = "EnovaVPN"
 
 # Generate filename using current time and protocol
@@ -118,7 +118,7 @@ def switch_protocol(driver):
     try:
         driver.execute_script('mobile: shell', {
             'command': 'input',
-            'args': ['tap',622, 1114]
+            'args': ['tap',622, 1242]
         })
         time.sleep(2)  # Wait for protocol to switch
 
@@ -163,7 +163,7 @@ def switch_protocol(driver):
 def scroll_and_click(driver,element_text):
     """ Scrolls down until an element with the given text is found and clicks it. """
     try:
-        wait = WebDriverWait(driver, 10)
+        wait = WebDriverWait(driver, 50)
         scrollable_element = wait.until(EC.presence_of_element_located((
             AppiumBy.ANDROID_UIAUTOMATOR,
             f'new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView(new UiSelector().descriptionContains("{element_text}"));'
@@ -194,7 +194,7 @@ def connect_disconnect_server(driver,server_name):
         time.sleep(2)
 
         # Open the country dropdowns
-        for country in ["USA", "Singapore", "Netherlands", "Germany"]:
+        for country in ["USA"]:
             scroll_and_click(driver,country)
 
         # Select the specific server
@@ -299,16 +299,16 @@ def get_ip_from_app(driver):
 
     # Open IP Info App
     driver.execute_script("mobile: shell", {"command": f"am start -n {app_package}/{app_activity}"})
-    time.sleep(5)
+    time.sleep(10)
 
     try:
-        refresh_button = WebDriverWait(driver, 10).until(
+        refresh_button = WebDriverWait(driver, 50).until(
             EC.presence_of_element_located((By.ID, "cz.webprovider.whatismyipaddress:id/refresh_info"))
         )
         refresh_button.click()
-        time.sleep(5)
+        time.sleep(10)
 
-        ip_element = WebDriverWait(driver, 30).until(
+        ip_element = WebDriverWait(driver, 50).until(
             EC.presence_of_element_located((By.ID, "cz.webprovider.whatismyipaddress:id/zobraz_ip"))
         )
         print("Ip from the My Ip app : ", ip_element.text.strip())
@@ -331,19 +331,18 @@ def get_ip_from_app(driver):
 
 
 
-def ipsec(driver):
-    print("Running Ipsec test")
+def shadowsocks(driver):
+    print("Running Shadowsocks test")
     switch_protocol(driver)
     # Ensure you're back to main screen before server testing
     driver.execute_script("mobile: shell", {
         "command": "am start -n com.enovavpn.mobile/com.enovavpn.mobile.MainActivity"
     })
     time.sleep(3)  # Give it time to load
-    print("################################### IPsec Protocol ############################################")
+    print("################################### Shadowsocks Protocol ############################################")
 
-    servers = ["USA - 1", "USA - 2", "USA - 5", "USA - 6", "Germany - 1", "Germany - 2", "Germany - 6",
-               "Germany - 8", "Singapore", "Singapore - 2", "Singapore - 7", "Netherlands - 1", "Netherlands - 3",
-               "France", "Indonesia", "South Korea", "Canada", "Poland", "United Kingdom"]
+    servers = ["France", "Indonesia", "South Korea", "Germany - 3",
+               "USA - 1", "USA - 2", "USA - 5", "Singapore", "Netherlands - 1"]
 
 
     for server in servers:

@@ -1,0 +1,21 @@
+VPN Test Report - EnovaVPN - Protocol: IPSec - 2025-04-09 12:27:00
+
+Server Name,Enova IP,IP Info IP,IP Match Status,Connection Status
+USA - 1,144.126.146.38,144.126.146.38,✅ IP Matched,✅ Connected
+USA - 2,162.120.71.217,162.120.71.217,✅ IP Matched,✅ Connected
+USA - 5,149.28.106.134,149.28.106.134,✅ IP Matched,✅ Connected
+USA - 6,144.202.21.60,144.202.21.60,✅ IP Matched,✅ Connected
+Germany - 1,157.173.125.188,157.173.125.188,✅ IP Matched,✅ Connected
+Germany - 2,N/A,N/A,❌ IP Error,❌ not Found
+Germany - 8,37.60.226.121,37.60.226.121,✅ IP Matched,✅ Connected
+Singapore,192.53.172.74,192.53.172.74,✅ IP Matched,✅ Connected
+Singapore - 2,146.190.88.170,146.190.88.170,✅ IP Matched,✅ Connected
+Singapore - 7,45.76.180.205,45.76.180.205,✅ IP Matched,✅ Connected
+Netherlands - 1,194.127.178.196,194.127.178.196,✅ IP Matched,✅ Connected
+Netherlands - 3,172.233.39.40,172.233.39.40,✅ IP Matched,✅ Connected
+France,107.191.63.241,107.191.63.241,✅ IP Matched,✅ Connected
+Indonesia,172.232.231.191,172.232.231.191,✅ IP Matched,✅ Connected
+South Korea,141.164.63.32,141.164.63.32,✅ IP Matched,✅ Connected
+Canada,137.220.52.80,137.220.52.80,✅ IP Matched,✅ Connected
+Poland,70.34.248.173,70.34.248.173,✅ IP Matched,✅ Connected
+United Kingdom,136.244.79.164,136.244.79.164,✅ IP Matched,✅ Connected

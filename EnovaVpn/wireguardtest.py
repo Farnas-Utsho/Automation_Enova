@@ -1,6 +1,7 @@
 import re
 import time
-
+import csv
+from datetime import datetime
 
 from appium.options.android import UiAutomator2Options
 from appium.webdriver.common.appiumby import AppiumBy
@@ -32,6 +33,49 @@ def setup_driver():
     driver = webdriver.Remote("http://127.0.0.1:4723/wd/hub", options=options)
     time.sleep(5)
     return driver
+
+
+
+
+import os
+from datetime import datetime
+
+# Set globally once per session or protocol test
+PROTOCOL_NAME = "Wireguard"  # <- You can change this dynamically if needed
+VPN_NAME = "EnovaVPN"
+
+# Generate filename using current time and protocol
+TIMESTAMP = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+CSV_FILENAME = f"vpn_ips_{TIMESTAMP}_{PROTOCOL_NAME}_{VPN_NAME}.csv"
+
+import csv
+import os
+from datetime import datetime
+
+def write_ip_to_csv(server_name, enova_ip, ip_info_ip, ip_match_status, connection_status):
+    file_path = CSV_FILENAME  # Use the generated dynamic filename
+
+    try:
+        file_needs_header = not os.path.exists(file_path) or os.path.getsize(file_path) == 0
+
+        with open(file_path, mode='a', newline='', encoding='utf-8') as file:
+            writer = csv.writer(file)
+
+            if file_needs_header:
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                title_row = f"VPN Test Report - {VPN_NAME} - Protocol: {PROTOCOL_NAME} - {current_time}"
+                writer.writerow([title_row])
+                writer.writerow([])  # Blank line
+                writer.writerow(["Server Name", "Enova IP", "IP Info IP", "IP Match Status", "Connection Status"])
+
+            # Data row
+            writer.writerow([server_name, enova_ip, ip_info_ip, ip_match_status, connection_status])
+            print(f"📥 CSV Updated → Server: {server_name}, IP Match: {ip_match_status}, Connection: {connection_status}")
+
+    except PermissionError:
+        print(f"🚫 Cannot write to CSV! File is locked or open elsewhere: {file_path}")
+
+
 
 def switch_protocol(driver):
     # Click on settings
@@ -74,7 +118,7 @@ def switch_protocol(driver):
     try:
         driver.execute_script('mobile: shell', {
             'command': 'input',
-            'args': ['tap',622, 1379]
+            'args': ['tap',622, 1380]
         })
         time.sleep(2)  # Wait for protocol to switch
 
@@ -128,6 +172,7 @@ def scroll_and_click(driver,element_text):
         return True  # Element found and clicked
     except TimeoutException:
         print(f"❌ {element_text} not found during scrolling.")
+        write_ip_to_csv(element_text, "N/A", "N/A", "❌ IP Error", "❌ not Found")
         return False  # Return False if the element isn't found
     except Exception as e:
         print(f"❌ Failed to open {element_text} dropdown: {e}")
@@ -165,6 +210,8 @@ def connect_disconnect_server(driver,server_name):
                 time.sleep(2)  # Wait for protocol to switch
             except Exception as e:
                 print("Back navigation not found")
+                write_ip_to_csv(server_name, "N/A", "N/A", "❌ Not Applicable", "❌ Server Not Found")
+
             return  # This returns from the function, thus skipping the rest of the steps and moving to the next server in the loop
 
         print(f"✅ {server_name} selected.")
@@ -176,15 +223,16 @@ def connect_disconnect_server(driver,server_name):
 
     except Exception as e:
         print(f"❌ {server_name} - Connection failed: {e}")
-
-
-
+        write_ip_to_csv(server_name, "N/A", "N/A", "❌ Not Applicable", "❌ Connection Failed") #added
+        return
 
     # Fetch IP Address from IP Info App
     try:
         ip_address = get_ip_from_app(driver)
     except Exception as e:
         print(f"❌ {server_name} - Failed to fetch IP: {e}")
+        write_ip_to_csv(server_name, "N/A", "N/A", "❌ Error Extracting IP", "✅ Connected")
+
         return
 
     # Switch back to Enova VPN
@@ -220,10 +268,17 @@ def connect_disconnect_server(driver,server_name):
                 print("✅ IP Matched")
             else:
                 print("❌ IP Does Not Match")
+            if extracted_ip == ip_address:
+                write_ip_to_csv(server_name, extracted_ip, ip_address, "✅ IP Matched", "✅ Connected")
+            else:
+                write_ip_to_csv(server_name, extracted_ip, ip_address, "❌ IP Not Matched", "✅ Connected")
+
         else:
             print(f"No IP Address found for {server_name}")
     except Exception as e:
         print(f"⚠️ Error extracting IP for {server_name}: {e}")
+        write_ip_to_csv(server_name, "N/A", ip_address or "N/A", "❌ Error Extracting IP", "✅ Connected")
+
         return
 
     # Close the pop-up
@@ -277,16 +332,6 @@ def get_ip_from_app(driver):
 
 
 
-# print("Running WireGuard test")
-# switch_protocol()
-# print("################################### Wireguard Protocol ############################################")
-# servers = ["France", "Indonesia", "South Korea", "Brazil", "Canada", "Poland", "United Kingdom", "Germany - 1",
-#                "USA - 1", "USA - 6", "USA - 5", "Singapore", "Singapore - 7", "Netherlands - 3", "Netherlands - 1"]
-# # Loop through the server list and call the function for each server
-# for server in servers:
-#         connect_disconnect_server(server)
-
-# Then modify your wireguard function like this:
 
 def wireguard(driver):
     print("Running WireGuard test")
@@ -298,10 +343,8 @@ def wireguard(driver):
     time.sleep(3)  # Give it time to load
     print("################################### Wireguard Protocol ############################################")
 
-   # servers = ["France", "Indonesia", "South Korea", "Brazil", "Canada", "Poland", "United Kingdom", "Germany - 1",
-              # "USA - 1", "USA - 6", "USA - 5", "Singapore", "Singapore - 7", "Netherlands - 3", "Netherlands - 1"]
-    servers = ["France", "Indonesia", "Poland", "United Kingdom", "Germany - 11",
-               "USA - 1", "Singapore - 7", "Netherlands - 1"]
+    servers = ["France", "Indonesia", "South Korea", "Brazil", "Canada", "Poland", "United Kingdom", "Germany - 1",
+               "USA - 1", "USA - 6", "USA - 5", "Singapore", "Singapore - 7", "Netherlands - 3", "Netherlands - 1"]
 
     for server in servers:
         connect_disconnect_server(driver, server)
